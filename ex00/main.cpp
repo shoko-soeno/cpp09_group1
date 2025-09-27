@@ -12,7 +12,7 @@ static void printError(const std::string& msg){
 int main(int argc, char** argv) {
     if (argc != 2) { printError("could not open file."); return 1; }
 
-    // 課題付属CSVを "data.csv" と仮定
+    // レビューでどうなるか不明だけど、いったん同じディレクトリにdata.csvを置く
     std::ifstream db("data.csv");
     if (!db) { printError("could not open data.csv"); return 1; }
 
@@ -21,5 +21,7 @@ int main(int argc, char** argv) {
 
     BitcoinExchange app;
     app.run(db, in, std::cout, std::cerr);
+    db.close();
+    in.close();
     return 0;
 }
