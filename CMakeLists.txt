@@ -16,4 +16,5 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_subdirectory(ex00)
+# add_subdirectory(ex00)
+add_subdirectory(tests/ex00)

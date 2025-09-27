@@ -1,4 +1,4 @@
-#include "BitcoinExchange.hpp"
+#include "../ex00/BitcoinExchange.hpp"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <string>
