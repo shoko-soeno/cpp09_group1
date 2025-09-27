@@ -1,6 +1,0 @@
-[submodule "packages_github"]
-	path = packages_github
-	url = https://github.com/google/googletest.git
-[submodule "packages-github"]
-	path = packages-github
-	url = https://github.com/google/googletest.git
