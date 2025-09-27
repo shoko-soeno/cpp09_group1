@@ -123,7 +123,7 @@ bool BitcoinExchange::isValidDate(const std::string& d) {
     return true;
 }
 
-// 0〜1000（課題の“between 0 and 1000”に合わせる）
+// 0〜1000（valueは“between 0 and 1000”）
 bool BitcoinExchange::isValidValue(double v) {
     if (v < 0.0) return false;
     if (v > 1000.0) return false;
@@ -135,13 +135,13 @@ void BitcoinExchange::run(std::istream& dbCsv, std::istream& input, std::ostream
     catch (const std::exception& e) { printError(err, e.what()); return; }
 
     std::string line;
-    bool first = true;
+    bool header_checked = true;
 
     while (std::getline(input, line)) {
         if (line.empty()) continue;
 
-        if (first) {
-            first = false;
+        if (header_checked) {
+            header_checked = false;
             if (isHeaderLine(line)) continue; // ヘッダは読み飛ばす
         }
 
