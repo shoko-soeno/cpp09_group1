@@ -12,9 +12,10 @@ git submodule update --init
 # インストールする先のディレクトリパス
 INSTALL_DIR="$(pwd)/packages"
 
-pushd . > /dev/null
-cd packages_github
-for PACKAGE_DIR in $(ls -d */); do
+PACKAGE_DIR_LIST=(
+  "googletest"
+)
+for PACKAGE_DIR in $PACKAGE_DIR_LIST; do
   pushd . > /dev/null
   cd "$PACKAGE_DIR"
   mkdir build && cd $_
@@ -23,5 +24,4 @@ for PACKAGE_DIR in $(ls -d */); do
   make install
   popd > /dev/null
 done
-popd > /dev/null
 ```
