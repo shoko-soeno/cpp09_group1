@@ -1,5 +1,5 @@
 NAME	= btc
-SRCS	= main.cpp BitcoinExchange.cpp
+SRCS	= main.cpp BitcoinExchange.cpp RateTable.cpp
 
 OBJS	= $(SRCS:.cpp=.o)
 
