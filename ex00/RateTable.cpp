@@ -12,13 +12,6 @@ RateTable::~RateTable() {}
 RateTable::RateTable(const RateTable&) = default;
 RateTable& RateTable::operator=(const RateTable&) = default;
 
-std::string BitcoinExchange::trim(const std::string& s) {
-    std::string::size_type b = s.find_first_not_of(" \t\r\n");
-    std::string::size_type e = s.find_last_not_of(" \t\r\n");
-    if (b == std::string::npos) { return ""; }
-    return s.substr(b, e - b + 1);
-}
-
 void RateTable::load(std::istream& in) {
     std::string line;
     bool header_checked = false;

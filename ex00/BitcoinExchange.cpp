@@ -11,6 +11,13 @@ BitcoinExchange::~BitcoinExchange() {}
 BitcoinExchange::BitcoinExchange(const BitcoinExchange&) = default;
 BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange&) = default;
 
+std::string BitcoinExchange::trim(const std::string& s) {
+    std::string::size_type b = s.find_first_not_of(" \t\r\n");
+    std::string::size_type e = s.find_last_not_of(" \t\r\n");
+    if (b == std::string::npos) { return ""; }
+    return s.substr(b, e - b + 1);
+}
+
 static void printError(std::ostream& err, const std::string& msg) {
     err << "Error: " << msg << '\n';
 }
