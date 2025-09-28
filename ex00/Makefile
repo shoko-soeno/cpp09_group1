@@ -25,8 +25,8 @@ fclean: clean
 re: fclean all
 
 test:
-	cmake -S ../.. -B ../../build
-	cmake --build ../../build
-	../../build/ex00/ex00_test
+	cmake -S .. -B ../build
+	cmake --build ../build
+	valgrind --leak-check=full ../build/ex00/ex00_test
 
 .PHONY: all clean fclean re

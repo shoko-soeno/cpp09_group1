@@ -12,13 +12,16 @@
 // data.csv の読み込みとレート取得を担当するクラス
 class RateTable {
 public:
+    RateTable();
+    RateTable(const RateTable&);
+    RateTable& operator=(const RateTable&);
+    ~RateTable();
   /**
     * Loads exchange rates from the given input stream.
     * The input should be in the format "date,rate" per line.
     * @param in The input stream to read from.
   */
   void load(std::istream& in);
-
   /**
    * Gets the rate for the given date, or the closest previous date if not found.
    * @param date The date string in YYYY-MM-DD format.
@@ -33,6 +36,10 @@ private:
 // input.txtの解析と検証も含む
 class BitcoinExchange {
 public:
+    BitcoinExchange();
+    BitcoinExchange(const BitcoinExchange&);
+    BitcoinExchange& operator=(const BitcoinExchange&);
+    ~BitcoinExchange();
     void run(std::istream& dbCsv, std::istream& input, std::ostream& out, std::ostream& err);
 
     // テストしやすいように publicにしておく
