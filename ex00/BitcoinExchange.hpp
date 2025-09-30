@@ -3,13 +3,12 @@
 #include <map>
 #include <string>
 #include <istream>
+#include <sstream>
+#include <stdexcept>
+#include <cctype>     // isdigit
+#include <cstdlib>    // strtod
+#include <iomanip>
 #include "RateTable.hpp"
-
-#define DATE_YEAR_END  4  // YYYY-MM-DD
-                          //     ^ <----- ここ
-#define DATE_MONTH_END 7  // YYYY-MM-DD
-                          //        ^ <-- ここ
-#define DATE_TOTAL_LEN 10
 
 // input.txtの解析と検証も含む
 class BitcoinExchange {
@@ -24,11 +23,6 @@ public:
     static bool isValidDate(const std::string& date);
     static bool isValidValue(double v);
     static bool isHeaderLine(std::string s);
-    /**
-      * 文字列の前後の空白を削除する
-      * @param s 入力文字列
-    */
-    static std::string trim(const std::string& s);
 
 private:
     /**

@@ -1,11 +1,5 @@
-#ifndef RATETABLE_CPP
-#define RATETABLE_CPP
-#include "BitcoinExchange.hpp"
-#include <sstream>
-#include <stdexcept>
-#include <cctype>     // isdigit
-#include <cstdlib>    // strtod
-#include <iomanip>
+#include "RateTable.hpp"
+#include "Utils.hpp"
 
 RateTable::RateTable() {}
 RateTable::~RateTable() {}
@@ -22,7 +16,7 @@ void RateTable::load(std::istream& in) {
         // 先頭行がヘッダなら捨てる
         if (!header_checked) {
             header_checked = true;
-            std::string t = BitcoinExchange::trim(line);
+            std::string t = trim(line);
             if (t == "date,exchange_rate") continue;
         }
 
@@ -30,8 +24,8 @@ void RateTable::load(std::istream& in) {
         std::string::size_type comma = line.find(',');
         if (comma == std::string::npos) continue; // 壊れた行は無視
 
-        std::string date = BitcoinExchange::trim(line.substr(0, comma));
-        std::string srate = BitcoinExchange::trim(line.substr(comma + 1));
+        std::string date = trim(line.substr(0, comma));
+        std::string srate = trim(line.substr(comma + 1));
         if (date.size() == 0 || srate.size() == 0) continue;
 
         // rateをdoubleに（末尾にゴミはないと仮定）
@@ -67,5 +61,3 @@ bool RateTable::getRateForDate(const std::string& date, double& out) const {
     }
     return true;
 }
-
-#endif // RATETABLE_CPP

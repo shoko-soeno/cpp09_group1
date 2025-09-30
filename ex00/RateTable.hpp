@@ -3,12 +3,17 @@
 #include <map>
 #include <string>
 #include <istream>
+#include <sstream>
+#include <stdexcept>
+#include <cctype>     // isdigit
+#include <cstdlib>    // strtod
+#include <iomanip>
 
+#define DATE_TOTAL_LEN 10
 #define DATE_YEAR_END  4  // YYYY-MM-DD
                           //     ^ <----- ここ
 #define DATE_MONTH_END 7  // YYYY-MM-DD
                           //        ^ <-- ここ
-#define DATE_TOTAL_LEN 10
 
 // data.csv の読み込みとレート取得を担当するクラス
 class RateTable {

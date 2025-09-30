@@ -1,26 +1,10 @@
 #include "BitcoinExchange.hpp"
-#include "RateTable.hpp"
-#include <sstream>
-#include <stdexcept>
-#include <cctype>     // isdigit
-#include <cstdlib>    // strtod
-#include <iomanip>
+#include "Utils.hpp"
 
 BitcoinExchange::BitcoinExchange() {}
 BitcoinExchange::~BitcoinExchange() {}
 BitcoinExchange::BitcoinExchange(const BitcoinExchange&) = default;
 BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange&) = default;
-
-std::string BitcoinExchange::trim(const std::string& s) {
-    std::string::size_type b = s.find_first_not_of(" \t\r\n");
-    std::string::size_type e = s.find_last_not_of(" \t\r\n");
-    if (b == std::string::npos) { return ""; }
-    return s.substr(b, e - b + 1);
-}
-
-static void printError(std::ostream& err, const std::string& msg) {
-    err << "Error: " << msg << '\n';
-}
 
 bool BitcoinExchange::parseStrictDouble(const std::string& s, double& out) {
     const char* c = s.c_str();
@@ -87,8 +71,8 @@ void BitcoinExchange::run(std::istream& dbCsv, std::istream& input, std::ostream
             if (bar == std::string::npos)
                 throw std::runtime_error("bad input => " + line);
 
-            std::string date = this->trim(line.substr(0, bar));
-            std::string sval = this->trim(line.substr(bar + 1));
+            std::string date = trim(line.substr(0, bar));
+            std::string sval = trim(line.substr(bar + 1));
 
             if (!this->isValidDate(date))
                 throw std::runtime_error("bad input => " + date);
