@@ -1,5 +1,5 @@
-NAME	= btc
-SRCS	= main.cpp BitcoinExchange.cpp RateTable.cpp
+NAME	= RPN
+SRCS	= main.cpp RPN.cpp RPN.cpp
 
 OBJS	= $(SRCS:.cpp=.o)
 
@@ -27,6 +27,6 @@ re: fclean all
 test:
 	cmake -S .. -B ../build
 	cmake --build ../build
-	valgrind --leak-check=full ../build/ex00/ex00_test
+	valgrind --leak-check=full ../build/ex01/ex01_test
 
 .PHONY: all clean fclean re
