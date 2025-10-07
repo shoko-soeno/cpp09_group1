@@ -47,8 +47,8 @@ TEST(BitcoinExchangeTest, CalculationOutput) {
         "2012-01-11 | 2147483648\n"
     );
     std::ostringstream out, err;
-    BitcoinExchange app;
-    app.run(db, input, out, err);
+    BitcoinExchange app(db);
+    app.run(input, out, err);
 
     EXPECT_EQ(out.str(), answer_out);
     EXPECT_EQ(err.str(), answer_err);
@@ -75,8 +75,8 @@ TEST(BitcoinExchangeTest, InputEdgeCases) {
         "2011-01-03 | 1000.01\n"       // just above max
     );
     std::ostringstream out, err;
-    BitcoinExchange app;
-    app.run(db, input, out, err);
+    BitcoinExchange app(db);
+    app.run(input, out, err);
 
     // You can check for specific error messages or valid outputs
     std::string errors = err.str();

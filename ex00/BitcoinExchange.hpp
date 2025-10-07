@@ -13,11 +13,11 @@
 // input.txtの解析と検証も含む
 class BitcoinExchange {
 public:
-    BitcoinExchange();
+    BitcoinExchange(std::istream& dbCsv);
     BitcoinExchange(const BitcoinExchange&);
-    BitcoinExchange& operator=(const BitcoinExchange&);
+    BitcoinExchange& operator=(const BitcoinExchange& src);
     ~BitcoinExchange();
-    void run(std::istream& dbCsv, std::istream& input, std::ostream& out, std::ostream& err);
+    void run(std::istream& input, std::ostream& out, std::ostream& err);
 
     // テストしやすいように publicにしておく
     static bool isValidDate(const std::string& date);

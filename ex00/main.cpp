@@ -19,8 +19,8 @@ int main(int argc, char** argv) {
     std::ifstream in(argv[1]);
     if (!in) { printError("could not open file."); return 1; }
 
-    BitcoinExchange app;
-    app.run(db, in, std::cout, std::cerr);
+    BitcoinExchange app(db);
+    app.run(in, std::cout, std::cerr);
     db.close();
     in.close();
     return 0;

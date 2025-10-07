@@ -87,5 +87,6 @@
 		"markdown": false,
 		"scminput": false,
 		"cpp": true
-	}
+	},
+	"editor.defaultFormatter": "ms-vscode.cpptools"
 }

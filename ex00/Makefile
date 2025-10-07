@@ -14,7 +14,7 @@ $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(CSTD) -o $(NAME) $(OBJS)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CSTD) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)
@@ -27,6 +27,6 @@ re: fclean all
 test:
 	cmake -S .. -B ../build
 	cmake --build ../build
-	valgrind --leak-check=full ../build/ex00/ex00_test
+	valgrind --leak-check=full ../build/tests/ex00/ex00_test
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re test

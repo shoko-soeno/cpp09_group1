@@ -3,8 +3,15 @@
 
 RateTable::RateTable() {}
 RateTable::~RateTable() {}
-RateTable::RateTable(const RateTable&) = default;
-RateTable& RateTable::operator=(const RateTable&) = default;
+RateTable::RateTable(const RateTable&){
+    *this = RateTable();
+};
+RateTable& RateTable::operator=(const RateTable& other){
+    if (this != &other) {
+        this->rates_ = other.rates_;
+    }
+    return *this;
+}
 
 void RateTable::load(std::istream& in) {
     std::string line;

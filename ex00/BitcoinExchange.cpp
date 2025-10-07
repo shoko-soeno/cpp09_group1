@@ -1,10 +1,22 @@
 #include "BitcoinExchange.hpp"
 #include "Utils.hpp"
 
-BitcoinExchange::BitcoinExchange() {}
+BitcoinExchange::BitcoinExchange(std::istream& dbCsv) {
+    table_.load(dbCsv);
+}
+
 BitcoinExchange::~BitcoinExchange() {}
-BitcoinExchange::BitcoinExchange(const BitcoinExchange&) = default;
-BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange&) = default;
+
+BitcoinExchange::BitcoinExchange(const BitcoinExchange& src) {
+    this->table_ = src.table_;
+}
+
+BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& src){
+    if (this != &src) {
+        this->table_ = src.table_;
+    }
+    return *this;
+}
 
 bool BitcoinExchange::parseStrictDouble(const std::string& s, double& out) {
     const char* c = s.c_str();
@@ -46,15 +58,8 @@ bool BitcoinExchange::isValidValue(double v) {
     return true;
 }
 
-void BitcoinExchange::run(std::istream& dbCsv, std::istream& input, std::ostream& out, std::ostream& err) {
-    try {
-        table_.load(dbCsv);
-    } catch (const std::exception& e) {
-        printError(err, e.what());
-        return;
-    }
-
-    std::string line;
+void BitcoinExchange::run(std::istream& input, std::ostream& out, std::ostream& err) {
+            std::string line;
     bool header_checked = false;
 
     while (std::getline(input, line, '\n')) {
