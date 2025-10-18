@@ -19,8 +19,8 @@
 class RateTable {
 public:
     RateTable();
-    RateTable(const RateTable&);
-    RateTable& operator=(const RateTable&);
+    RateTable(const RateTable& src);
+    RateTable& operator=(const RateTable& src);
     ~RateTable();
   /**
     * Loads exchange rates from the given input stream.

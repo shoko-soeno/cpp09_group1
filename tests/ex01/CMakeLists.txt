@@ -1,16 +1,16 @@
 enable_testing()
 
-include_directories(${CMAKE_SOURCE_DIR}/ex00)
+include_directories(${CMAKE_SOURCE_DIR}/ex01)
 
 add_executable(
-  ex00_test
-  ${CMAKE_SOURCE_DIR}/ex00/BitcoinExchange.cpp
-  ${CMAKE_SOURCE_DIR}/tests/ex00/ex00.test.cpp
+  ex01_test
+  ${CMAKE_SOURCE_DIR}/ex01/RPN.cpp
+  ${CMAKE_SOURCE_DIR}/tests/ex01/ex01.test.cpp
 )
 target_link_libraries(
-  ex00_test
+  ex01_test
   GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(ex00_test)
+gtest_discover_tests(ex01_test)

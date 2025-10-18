@@ -7,18 +7,21 @@
 #include <cctype>     // isdigit
 #include <stack>
 #include <iostream>
-
-#define OPERATORS "+-/*"
+#include <limits>
+#include <list>
 
 class RPN {
-public:
+private:
     RPN();
     RPN(const RPN&);
     RPN& operator=(const RPN& src);
     ~RPN();
-    
-private:
-    std::stack<int> stack_;
-    bool isOperator(char c);
-    int applyOperator(int left, int right, char op);
-}
+
+    static bool isOperator(const char c);
+    static long long processOperator(const char op, long long a, long long b);
+
+public:
+    static void parseAndPushToken(const std::string& expresstion);
+};
+
+#endif // RPN_HPP

@@ -13,7 +13,7 @@
 // input.txtの解析と検証も含む
 class BitcoinExchange {
 public:
-    BitcoinExchange(std::istream& dbCsv);
+    explicit BitcoinExchange(std::istream& dbCsv);
     BitcoinExchange(const BitcoinExchange&);
     BitcoinExchange& operator=(const BitcoinExchange& src);
     ~BitcoinExchange();

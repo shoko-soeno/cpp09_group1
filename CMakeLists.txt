@@ -19,3 +19,4 @@ enable_testing()
 
 # add_subdirectory(ex00)
 add_subdirectory(tests/ex00)
+add_subdirectory(tests/ex01)

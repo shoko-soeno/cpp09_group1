@@ -3,12 +3,13 @@
 
 RateTable::RateTable() {}
 RateTable::~RateTable() {}
-RateTable::RateTable(const RateTable&){
-    *this = RateTable();
+RateTable::RateTable(const RateTable& src) {
+    if (this != &src)
+        *this = RateTable();
 };
-RateTable& RateTable::operator=(const RateTable& other){
-    if (this != &other) {
-        this->rates_ = other.rates_;
+RateTable& RateTable::operator=(const RateTable& src){
+    if (this != &src) {
+        this->rates_ = src.rates_;
     }
     return *this;
 }

@@ -1,5 +1,5 @@
 NAME	= RPN
-SRCS	= main.cpp RPN.cpp RPN.cpp
+SRCS	= main.cpp RPN.cpp
 
 OBJS	= $(SRCS:.cpp=.o)
 
@@ -17,10 +17,10 @@ $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(CSTD) -c $< -o $@
 
 clean:
-	rm -f $(OBJS)
+	$(RM) $(OBJS)
 
 fclean: clean
-	rm -f $(NAME)
+	$(RM) $(NAME)
 
 re: fclean all
 
