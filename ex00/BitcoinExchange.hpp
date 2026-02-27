@@ -19,7 +19,6 @@ public:
     ~BitcoinExchange();
     void run(std::istream& input, std::ostream& out, std::ostream& err);
 
-    // テストしやすいように publicにしておく
     static bool isValidDate(const std::string& date);
     static bool isValidValue(double v);
     static bool isHeaderLine(std::string s);

@@ -20,28 +20,23 @@ void RateTable::load(std::istream& in) {
 
     while (std::getline(in, line)) {
         if (line.empty()) continue;
-
-        // 先頭行がヘッダなら捨てる
         if (!header_checked) {
             header_checked = true;
             std::string t = trim(line);
-            if (t == "date,exchange_rate") continue;
+            if (t == "date,exchange_rate") continue; // skip header
         }
-
-        // "date,rate" を読む
         std::string::size_type comma = line.find(',');
-        if (comma == std::string::npos) continue; // 壊れた行は無視
+        if (comma == std::string::npos) continue; // skip malformed line
 
         std::string date = trim(line.substr(0, comma));
         std::string srate = trim(line.substr(comma + 1));
         if (date.size() == 0 || srate.size() == 0) continue;
 
-        // rateをdoubleに（末尾にゴミはないと仮定）
         const char* c = srate.c_str();
         char* endp = 0;
         double rate = std::strtod(c, &endp);
-        if (endp == c) continue;
-
+        if (endp == c) continue; // failed to parse
+        if (*endp != '\0') continue; // extra characters after number
         rates_[date] = rate;
     }
 
@@ -52,20 +47,17 @@ void RateTable::load(std::istream& in) {
 bool RateTable::getRateForDate(const std::string& date, double& out) const {
     if (rates_.empty()) return false;
 
-    std::map<std::string,double>::const_iterator it = rates_.lower_bound(date);
+    // lower_bound returns the first element with key >= date
+    std::map<std::string,double>::const_iterator bound_it = rates_.lower_bound(date);
 
-    if (it == rates_.end()) {
-        // If date is after all keys, use the last rate
-        out = (--it)->second;
-    } else if (it == rates_.begin() && it->first > date) {
-        // If date is before all keys, no rate available
-        return false;
-    } else if (it->first > date) {
-        // Use the previous rate
-        out = (--it)->second;
+    if (bound_it == rates_.end()) {
+        out = (--bound_it)->second;
+    } else if (bound_it == rates_.begin() && bound_it->first > date) {
+        return false; // no rate available
+    } else if (bound_it->first > date) {
+        out = (--bound_it)->second;
     } else {
-        // Exact match or closest previous date
-        out = it->second;
+        out = bound_it->second; // exact match
     }
     return true;
 }
