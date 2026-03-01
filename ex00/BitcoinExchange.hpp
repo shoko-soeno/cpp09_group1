@@ -2,6 +2,7 @@
 #define BITCOINEXCHANGE_HPP
 #include <map>
 #include <string>
+#include <iostream>
 #include <istream>
 #include <sstream>
 #include <stdexcept>
@@ -25,16 +26,16 @@ public:
 
 private:
     /**
-      * C++98 には std::stod がないので、strtodを使って厳密にパースする
+      * C++98 には std::stod がないので、strtodを使ってパース
       * @param s 入力文字列
       * @param out 変換結果の出力先
       * @return 変換成功なら true、失敗なら false
     */
-    static bool parseStrictDouble(const std::string& s, double& out);
+    static bool parseDouble(const std::string& sval, double& out);
 
-    static bool checkYYYYMMDD(const std::string& d);
-    static bool split_YYYY_MM_DD(
-      const std::string& d,
+    static bool checkYMD(const std::string& date);
+    static bool splitYMD(
+      const std::string& date,
       int& y,
       int& m,
       int& day);

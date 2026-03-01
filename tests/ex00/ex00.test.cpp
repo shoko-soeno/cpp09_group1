@@ -21,18 +21,6 @@ TEST(BitcoinExchangeTest, ValidValue) {
 }
 
 TEST(BitcoinExchangeTest, CalculationOutput) {
-    static const std::string answer_out =
-        "2011-01-03 => 3 = 0.9\n"
-        "2011-01-03 => 2 = 0.6\n"
-        "2011-01-03 => 1 = 0.3\n"
-        "2011-01-03 => 1.2 = 0.36\n"
-        "2011-01-09 => 1 = 0.32\n"
-        "2012-01-11 => 1 = 7.1\n";
-    static const std::string answer_err =
-        "Error: not a positive number.\n"
-        "Error: bad input => 2001-42-42\n"
-        "Error: too large a number.\n";
-
     std::istringstream db("2011-01-03,0.3\n2011-01-09,0.32\n2012-01-11,7.1\n");
     std::istringstream input(
         "date | value\n"
@@ -46,6 +34,17 @@ TEST(BitcoinExchangeTest, CalculationOutput) {
         "2012-01-11 | 1\n"
         "2012-01-11 | 2147483648\n"
     );
+    static const std::string answer_out =
+        "2011-01-03 => 3 = 0.9\n"
+        "2011-01-03 => 2 = 0.6\n"
+        "2011-01-03 => 1 = 0.3\n"
+        "2011-01-03 => 1.2 = 0.36\n"
+        "2011-01-09 => 1 = 0.32\n"
+        "2012-01-11 => 1 = 7.1\n";
+    static const std::string answer_err =
+        "Error: not a positive number.\n"
+        "Error: bad input => 2001-42-42\n"
+        "Error: too large a number.\n";
     std::ostringstream out, err;
     BitcoinExchange app(db);
     app.run(input, out, err);
@@ -55,14 +54,33 @@ TEST(BitcoinExchangeTest, CalculationOutput) {
 }
 
 TEST(BitcoinExchangeTest, InputEdgeCases) {
-    std::istringstream db("2012-02-29,1.0\n2011-01-03,0.3\n2011-01-09,0.32\n2012-01-11,7.1\n");
+    static const std::string answer_out =
+        "2012-02-29 => 1 = 1\n" // valid leap year
+        "2011-01-03 => 0 = 0\n" // boundary: zero value
+        "2011-01-03 => 1000 = 300\n" // boundary: max valid value
+        "2011-01-03 => 1 = 0.3\n"; // no spaces around bar
+
+    static const std::string answer_err =
+        "Error: bad input => abc\n" // non-numeric value
+        "Error: bad input => \n" // missing value
+        "Error: bad input => \n" // missing date
+        "Error: bad input => 2011-01-03\n" // missing bar and value
+        "Error: bad input => 2011-02-29\n" // invalid date (not leap year)
+        "Error: bad input => 2011-13-01\n" // invalid month
+        "Error: bad input => 2011-00-01\n" // invalid month (zero)
+        "Error: bad input => 2011-01-32\n" // invalid day
+        "Error: bad input => 2011-01-00\n" // invalid day
+        "Error: too large a number.\n" // just above max
+        "Error: bad input => 1 | 2\n"; // extra bar
+
+    std::istringstream db(
+        "2012-02-29,1.0\n2011-01-03,0.3\n2011-01-09,0.32\n2012-01-11,7.1\n"
+    );
     std::istringstream input(
         "date | value\n"
         "2011-01-03 | abc\n"           // non-numeric value
         "2011-01-03 |\n"               // missing value
         "| 1\n"                        // missing date
-        "2011-01-03|1\n"               // no spaces around bar
-        "2011-01-03 | 1 | extra\n"     // extra bar
         "2011-01-03\n"                 // missing bar and value
         "2011-02-29 | 1\n"             // invalid date (not leap year)
         "2012-02-29 | 1\n"             // valid leap year date
@@ -73,23 +91,12 @@ TEST(BitcoinExchangeTest, InputEdgeCases) {
         "2011-01-03 | 0\n"             // boundary: zero value
         "2011-01-03 | 1000\n"          // boundary: max valid value
         "2011-01-03 | 1000.01\n"       // just above max
+        "2011-01-03 | 1 | 2\n"          // extra bar
+        "2011-01-03|1\n"              // no spaces around bar
     );
     std::ostringstream out, err;
     BitcoinExchange app(db);
     app.run(input, out, err);
-
-    // You can check for specific error messages or valid outputs
-    std::string errors = err.str();
-    EXPECT_NE(errors.find("Error: bad input => abc"), std::string::npos);
-    EXPECT_NE(errors.find("Error: bad input => "), std::string::npos); // for missing value/date
-    EXPECT_NE(errors.find("Error: bad input => 2011-13-01"), std::string::npos);
-    EXPECT_NE(errors.find("Error: bad input => 2011-00-01"), std::string::npos);
-    EXPECT_NE(errors.find("Error: bad input => 2011-01-32"), std::string::npos);
-    EXPECT_NE(errors.find("Error: bad input => 2011-01-00"), std::string::npos);
-    EXPECT_NE(errors.find("Error: too large a number."), std::string::npos);
-
-    std::string output = out.str();
-    EXPECT_NE(output.find("2012-02-29 => 1 = 1"), std::string::npos); // valid leap year
-    EXPECT_NE(output.find("2011-01-03 => 0 = 0"), std::string::npos); // boundary zero
-    EXPECT_NE(output.find("2011-01-03 => 1000 = 300"), std::string::npos); // boundary max
+    EXPECT_EQ(out.str(), answer_out);
+    EXPECT_EQ(err.str(), answer_err);
 }

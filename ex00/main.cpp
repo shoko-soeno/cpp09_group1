@@ -1,6 +1,5 @@
 #include "BitcoinExchange.hpp"
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <cstdlib> // strtod (C++98 には std::stod がない)
