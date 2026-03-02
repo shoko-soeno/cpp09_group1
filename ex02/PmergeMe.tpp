@@ -2,197 +2,159 @@
 #define PMERGE_ME_TPP
 #include "PmergeMe.hpp"
 
-#ifndef DEBUG
+#ifdef DEBUG
 extern int num_comparisons;
 #endif
 
-// ========= Ctors / Dtor =========
-// template <typename Container>
-// PmergeMe<Container>::PmergeMe() {}
-
-// template <typename Container>
-// PmergeMe<Container>::~PmergeMe() {}
-
-
-// ========= makePairsAndSwap =========
-// idx は 0..N-1 の “元配列インデックス”。
-// 前半 i と 後半 j=i+N/2 をペアにし、elems[idx[i]] と elems[idx[j]] を比較して
-// 大きい方のインデックスが前半側(idx[i])に来るようにスワップ。
 template <typename Container>
-void PmergeMe<Container>::makePairsAndSwap(const Container& elems, Container& idx) {
-  const int N    = static_cast<int>(idx.size());
-  const int half = N / 2;
-  for (int i = 0, j = half; i < half; ++i, ++j) {
-#ifdef DEBUG
-    ++num_comparisons;
-#endif
-    if (elems[idx[i]] < elems[idx[j]]) {
-      std::swap(idx[i], idx[j]);
-    }
-  }
-}
-
-// ========= buildMainAndRemIndex =========
-// 再帰で得た firstHalfIdx（前半の並び替え順）を使って
-// mainIdx（ペアの大きい側＝前半）と remIdx（ペアの小さい側＝後半）を作る。
-// 奇数要素があれば remIdx の末尾に N-1 を追加。
-template <typename Container>
-void PmergeMe<Container>::buildMainChainAndRemIndex(const Container& sortIdx,
-                                               const Container& firstHalfIdx,
-                                               Container& mainIdx,
-                                               Container& remIdx) {
-  const int N = static_cast<int>(sortIdx.size());
-  const int half = N / 2;
-
-  mainIdx.assign(N, -1);
-  for (int i = 0; i < half; ++i) {
-    mainIdx[i] = sortIdx[firstHalfIdx[i]];
-  }
-  remIdx.clear();
-  // remIdx.reserve(half + (N % 2 ? 1 : 0));
-  for (int i = 0; i < half; ++i) {
-    const int idx = mainIdx[i];
-    const int paired = (idx >= half) ? (idx - half) : (idx + half);
-    remIdx.push_back(paired);
-  }
-  if (N % 2) remIdx.push_back(N - 1);
-}
-
-
-// ========= materializeChains =========
-// index 配列に従って、元配列 first から値列を構築する
-template <typename Container>
-void PmergeMe<Container>::materializeChains(const_iterator first,
-                                            const Container& mainIdx,
-                                            const Container& remIdx,
-                                            Container& mainVals,
-                                            Container& remVals) {
-  const int half = static_cast<int>(remIdx.size()) - (remIdx.empty() ? 0 : (remIdx.back() == -1 ? 1 : 0));
-  (void)half; // 使わないけど保険で残しておくなら消してOK
-
-  mainVals.clear();
-  remVals.clear();
-
-  // mainIdx の有効領域は [0 .. remIdx.size()-1] まで（N/2 個、奇数時は main と rem の合計で N 個）
-  for (std::size_t i = 0; i < remIdx.size(); ++i) {
-    if (i < mainIdx.size() && mainIdx[i] >= 0)
-      mainVals.push_back(*(first + mainIdx[i]));
-    remVals.push_back(*(first + remIdx[i]));
-  }
-}
-
-template <typename Container>
-int PmergeMe<Container>::binaryInsertion(const Container& mainVals,
+int PmergeMe<Container>::binaryInsertion(Container& mainChain,
                                        const typename Container::value_type& val,
-                                       int rightInclusive) {
+                                       int right) {
     int left = 0;
-    int right = rightInclusive;
-    
+    if (mainChain.size() <= static_cast<size_t>(right)) {
+      right = mainChain.size() - 1;
+    }
     while (left <= right) {
+#ifdef DEBUG
+      num_comparisons++;
+#endif  // DEBUG
         int mid = left + (right - left) / 2;
-        if (mainVals[mid] <= val) {
+        if (mainChain[mid] == val) {
+            left = mid;
+            break;
+        } else if (mainChain[mid] < val) {
             left = mid + 1;
         } else {
             right = mid - 1;
         }
     }
+    mainChain.insert(mainChain.begin() + left, val);
     return left;
+}
+
+template <typename Container>
+void PmergeMe<Container>::makePairsAndSwap(Container& elems, Container& sortIdx) {
+  const int N    = static_cast<int>(sortIdx.size());
+  const int half = N / 2;
+  for (int i = 0, j = half; i < half; ++i, ++j) {
+#ifdef DEBUG
+      num_comparisons++;
+#endif  // DEBUG
+    if (elems[i] < elems[j]) {
+      std::swap(elems[i], elems[j]);
+      std::swap(sortIdx[i], sortIdx[j]);
+    }
+  }
+}
+
+template <typename Container>
+void PmergeMe<Container>::materializeChains(const_iterator first,
+                                            Container& mainIdx,
+                                            Container& remIdx,
+                                            Container& mainChain,
+                                            Container& remChain,
+                                            const Container& sortIdx) {
+  const int N = static_cast<int>(mainIdx.size());
+  for (int i = 0; i < N / 2; i++) {
+    mainChain.push_back(first[mainIdx[i]]);
+    remChain.push_back(first[remIdx[i]]);
+  }
+  if (N % 2 == 1) {
+    remChain.push_back(first[N - 1]);
+    // remIdx.push_back(N - 1);
+    remIdx.push_back(sortIdx[N - 1]);
+  }
+  mainChain.insert(mainChain.begin(), remChain.front());
+  for (int i = N / 2 - 1; i >= 0; --i) {
+    mainIdx[i + 1] = mainIdx[i];
+  }
+  mainIdx.front() = remIdx.front();
 }
 
 // ========= jacobsthalInsert =========
 // remVals を Jacobsthal 順に mainVals へ二分挿入していき、対応するインデックス列 mainIdx も更新する
 template <typename Container>
-void PmergeMe<Container>::jacobsthalInsert(Container& mainVals, Container& mainIdx,
-                                           const Container& remVals, const Container& remIdx,
+void PmergeMe<Container>::jacobsthalInsert(Container& mainChain, Container& mainIdx,
+                                           const Container& remChain, const Container& remIdx,
                                            int N) {
-  // まず remVals[0] を main の先頭に入れる（仕様に合わせる）
-  mainVals.insert(mainVals.begin(), remVals.front());
-  // mainIdx をシフトして先頭に remIdx[0] を入れる
-  for (int j = N - 1; j >= 1; --j) mainIdx[j] = mainIdx[j - 1];
-  mainIdx[0] = remIdx.front();
-
-  // Jacobsthal: J0=0, J1=2, Jn=J(n-1)+2*J(n-2) をグループサイズとして使う
-  std::size_t numInserted  = 1;
+  // Jacobsthal: J0=0, J1=2, Jn=J(n-1)+2*J(n-2)
+  std::size_t numInserted  = 1; // remChain[0] is already inserted
   std::size_t prevGroup    = 0;
   std::size_t curGroup     = 2;
-  std::size_t upperBoundIx = (N - 1 < 4 ? static_cast<std::size_t>(N - 1) : 3);
+  std::size_t upperBoundIx = (N - 1 < 4 ? N - 1 : 3);
 
-  // 中間グループを逆順で挿入
-  while (numInserted + curGroup < remVals.size()) {
-    std::size_t end   = numInserted + curGroup;   // [numInserted, end)
-    std::size_t index = end - 1;
-    while (index >= numInserted) {
-      int pos = binaryInsertion(mainVals, remVals[index],
-                                static_cast<int>(upperBoundIx - 1));
-      // mainIdx も回転
+  while (numInserted + curGroup < remChain.size()) {
+    std::size_t end   = numInserted + curGroup;
+    std::size_t i = end - 1;
+    while (i >= numInserted) {
+      int pos = binaryInsertion(mainChain, remChain[i],
+                                upperBoundIx - 1);
+      // mainIdx を pos 以降で右にずらして remIdx[index] を pos に入れる
       for (int j = N - 1; j > pos; --j) mainIdx[j] = mainIdx[j - 1];
-      mainIdx[pos] = remIdx[index];
-
-      if (index == numInserted) break; // size_t の underflow 防止
-      --index;
+      mainIdx[pos] = remIdx[i];
+      if (i == numInserted) break; // size_t の underflow 防止
+      --i;
     }
-    // 次の Jacobsthal グループへ
+    // update Jacobsthal
     numInserted += curGroup;
     std::size_t nextGroup = curGroup + 2 * prevGroup;
     prevGroup    = curGroup;
     curGroup     = nextGroup;
+    // 2 * (2^k - 1) + 1
+    // = 2^(k+1) - 2 + 1
+    // = 2^(k+1) - 1
     upperBoundIx = 2 * upperBoundIx + 1;
   }
 
   // 残り（最後の不完全グループ）を逆順で挿入
-  if (numInserted < remVals.size()) {
-    std::size_t index = remVals.size() - 1;
-    while (index >= numInserted) {
-      int pos = binaryInsertion(mainVals, remVals[index],
-                                static_cast<int>(upperBoundIx - 1));
+  if (numInserted < remChain.size()) {
+    std::size_t i = remChain.size() - 1;
+    while (i >= numInserted) {
+      int pos = binaryInsertion(mainChain, remChain[i],
+                                upperBoundIx - 1);
       for (int j = N - 1; j > pos; --j) mainIdx[j] = mainIdx[j - 1];
-      mainIdx[pos] = remIdx[index];
-
-      if (index == numInserted) break;
-      --index;
+      mainIdx[pos] = remIdx[i];
+      if (i == numInserted) break;
+      --i;
     }
   }
 }
 
-
 // ========= mergeInsertionSort 本体 =========
 template <typename Container>
-Container PmergeMe<Container>::mergeInsertionSort(const_iterator first, const_iterator last) {
+Container PmergeMe<Container>::mergeInsertionSort(typename Container::iterator first,
+                               typename Container::iterator last) {
   const int N = static_cast<int>(std::distance(first, last));
   Container elems(first, last);
-
-  Container sortIdx;
-  sortIdx.resize(N);
+  Container sortIdx(N);
   for (int i = 0; i < N; ++i) sortIdx[i] = i;
-
   if (N <= 1) return sortIdx;
-
-  // ペアを作って大きい方を前半にスワップ
   makePairsAndSwap(elems, sortIdx);
-
-  if (N == 2) {
-    // 2 要素なら前半(=大)が先になるはずなので、元のインデックス並びを 0,1 から 1,0 に直す
+  if (N == 2) { // 2要素の場合は昇順にして返す
     std::swap(sortIdx[0], sortIdx[1]);
     return sortIdx;
   }
-
-  // 前半を再帰ソート（ここで返るのは [0..N/2) の「並び順インデックス」）
   Container firstHalfIdx =
       mergeInsertionSort(elems.begin(), elems.begin() + (N / 2));
-
-  // main/rem のインデックス列を作る
-  Container mainIdx, remIdx;
-  mainIdx.assign(N, -1);
-  buildMainChainAndRemIndex(sortIdx, firstHalfIdx, mainIdx, remIdx);
-
-  // 実体の値列を作る
-  Container mainVals, remVals;
-  materializeChains(first, mainIdx, remIdx, mainVals, remVals);
-
-  // Jacobsthal 順で rem を main に二分挿入していく（mainIdx も同様に更新）
-  jacobsthalInsert(mainVals, mainIdx, remVals, remIdx, N);
-
-  // mainIdx が「元配列の並び替え結果（インデックス列）」
+  Container mainIdx(N, -1);
+  for (int i = 0; i < N / 2; ++i) {
+    mainIdx[i] = sortIdx[firstHalfIdx[i]];
+  }
+  Container remIdx;
+  // for (int i = 0; i < N / 2; ++i) {
+  //   int idx = mainIdx[i];
+  //   int pairedIdx = idx >= N / 2 ? idx - N / 2 : idx + N / 2;
+  //   remIdx.push_back(pairedIdx);
+  // }
+  const int half = N / 2;
+  for (int k = 0; k < half; ++k) {
+    int pos = firstHalfIdx[k];             // 0..half-1
+    mainIdx[k] = sortIdx[pos];             // main（大きい方の元インデックス）
+    remIdx.push_back(sortIdx[pos + half]); // pend（小さい方の元インデックス）
+  }
+  Container mainChain, remChain;
+  materializeChains(first, mainIdx, remIdx, mainChain, remChain, sortIdx);
+  jacobsthalInsert(mainChain, mainIdx, remChain, remIdx, N);
   return mainIdx;
 }
 

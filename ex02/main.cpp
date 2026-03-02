@@ -33,8 +33,14 @@ bool parseArgs(int argc, char** argv,
 
 template <typename Container>
 void printContainer(const Container& container) {
-  for (typename Container::const_iterator it = container.begin(); it != container.end(); ++it) {
+  size_t count = 0;
+  const size_t maxToShow = 10; // 最初の10個だけ表示
+  for (typename Container::const_iterator it = container.begin();
+       it != container.end() && count < maxToShow; ++it, ++count) {
     std::cout << *it << " ";
+  }
+  if (container.size() > maxToShow) {
+    std::cout << "[...]";
   }
   std::cout << std::endl;
 }
@@ -45,15 +51,44 @@ double benchSortAndPrint(Container& input, const std::string& label, int countSh
   clock_t start = clock();
   Container indices = sorter.mergeInsertionSort(input.begin(), input.end());
   clock_t end = clock();
+  // ソート結果の検証
+  Container sortedResult;
+  for (size_t i = 0; i < indices.size(); ++i) {
+    sortedResult.push_back(input[indices[i]]);
+  }
+  // 1. サイズチェック
+  if (sortedResult.size() != input.size()) {
+    throw std::runtime_error("Sort error: Result size mismatch");
+  }
+  // 2. ソート順序チェック（昇順になっているか）
+  for (size_t i = 1; i < sortedResult.size(); ++i) {
+    if (sortedResult[i] < sortedResult[i-1]) {
+      throw std::runtime_error("Sort error: Result is not in ascending order");
+    }
+  }
+  // 3. 要素の一致チェック（元の配列と同じ要素が含まれているか）
+  Container originalCopy = input;
+  Container resultCopy = sortedResult;
+  std::sort(originalCopy.begin(), originalCopy.end());
+  std::sort(resultCopy.begin(), resultCopy.end());
+  if (originalCopy.size() != resultCopy.size()) {
+    throw std::runtime_error("Sort error: Element count mismatch");
+  }
+  for (size_t i = 0; i < originalCopy.size(); ++i) {
+    if (originalCopy[i] != resultCopy[i]) {
+      throw std::runtime_error("Sort error: Elements don't match original input");
+    }
+  }
 
   #ifdef DEBUG
   std::cout << label << ": number of comparisons: " << num_comparisons << "\n";
   num_comparisons = 0; // Reset for next measurement
   #endif
   std::cout << "After (" << label << "); ";
-  for (size_t i = 0; i < indices.size(); ++i) {
-    std::cout << input[indices[i]] << (i == indices.size() - 1 ? "\n" : " ");
-  }
+  printContainer(sortedResult);
+  // for (size_t i = 0; i < indices.size(); ++i) {
+  //   std::cout << input[indices[i]] << (i == indices.size() - 1 ? "\n" : " ");
+  // }
   double us = static_cast<double>(end - start) / CLOCKS_PER_SEC * 1e6;
   std::cout << "Time to process a range of " << std::setw(4) << countShown
             << " elements with std::" << label << " : " << us << " us" << std::endl;
@@ -76,3 +111,14 @@ int main(int argc, char** argv) {
     return 1;
   }
 }
+
+// 要素の順番で管理し、要素の挿入・削除ができるコンテナ
+// std::vector
+// ランダムアクセスが高速（要素へのアクセスが O(1）なので、比較やマージが速い）
+// メモリ管理がシンプル（データが1つの領域にまとまっているため、管理が容易）
+// 小規模なデータでは特に高速（メモリ再確保が少なく、データアクセスが最適化されやすい
+// std::deque　※両端キュー（Double-ended queue）
+// 先頭・末尾の挿入・削除が高速（途中での分割や再配置が発生しにくい）
+// メモリの再確保が少ない（内部的に分割して格納されるため、リサイズの影響が小さい）
+// 大規模データでも安定して動作（vector のように一括メモリ確保の影響を受けにくい）
+// つまり、ソート数が少なければ std::vector 、多ければ std::deque の方が処理時間が短くなる

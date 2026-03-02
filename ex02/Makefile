@@ -4,17 +4,16 @@ SRCS	= main.cpp
 OBJS	= $(SRCS:.cpp=.o)
 
 CXX	= c++
-CXXFLAGS	= -Wall -Werror -Wextra
-CSTD	= -std=c++98
+CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -DDEBUG
 
 .DEFAULT:	all
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(CSTD) -o $(NAME) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(CSTD) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	$(RM) $(OBJS)
