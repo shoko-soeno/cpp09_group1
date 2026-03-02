@@ -1,16 +1,18 @@
 #ifndef PMERGE_ME_TPP
 #define PMERGE_ME_TPP
+#include "PmergeMe.hpp"
 
 #ifndef DEBUG
 extern int num_comparisons;
 #endif
 
 // ========= Ctors / Dtor =========
-template <typename Container>
-PmergeMe<Container>::PmergeMe() {}
+// template <typename Container>
+// PmergeMe<Container>::PmergeMe() {}
 
-template <typename Container>
-PmergeMe<Container>::~PmergeMe() {}
+// template <typename Container>
+// PmergeMe<Container>::~PmergeMe() {}
+
 
 // ========= makePairsAndSwap =========
 // idx は 0..N-1 の “元配列インデックス”。
@@ -30,40 +32,12 @@ void PmergeMe<Container>::makePairsAndSwap(const Container& elems, Container& id
   }
 }
 
-// ===== buildMainAndRemIndex =====
-// sortIdx: 0..N-1（元配列インデックス）の並び。
-// firstHalfIdx: [0..N/2) の「並び順インデックス」（再帰の戻り値）。
-// mainIdx: 「大きい側」(N/2 個) の元配列インデックスが入る（残りは -1で埋める）。
-// remIdx : 「小さい側」(N/2 個, 奇数なら +1) の元配列インデックスが入る。
-template <typename Container>
-void PmergeMe<Container>::buildMainAndRemIndex(const Container& sortIdx,
-                                               const Container& firstHalfIdx,
-                                               Container& mainIdx,
-                                               Container& remIdx) {
-  const int N    = static_cast<int>(sortIdx.size());
-  const int half = N / 2;
-
-  mainIdx.assign(N, -1);
-  for (int i = 0; i < half; ++i) {
-    mainIdx[i] = sortIdx[firstHalfIdx[i]];
-  }
-
-  remIdx.clear();
-  remIdx.reserve(half + (N % 2 ? 1 : 0));
-  for (int i = 0; i < half; ++i) {
-    const int idx    = mainIdx[i];
-    const int paired = (idx >= half) ? (idx - half) : (idx + half);
-    remIdx.push_back(paired);
-  }
-  if (N % 2) remIdx.push_back(N - 1);
-}
-
 // ========= buildMainAndRemIndex =========
 // 再帰で得た firstHalfIdx（前半の並び替え順）を使って
 // mainIdx（ペアの大きい側＝前半）と remIdx（ペアの小さい側＝後半）を作る。
 // 奇数要素があれば remIdx の末尾に N-1 を追加。
 template <typename Container>
-void PmergeMe<Container>::buildMainAndRemIndex(const Container& sortIdx,
+void PmergeMe<Container>::buildMainChainAndRemIndex(const Container& sortIdx,
                                                const Container& firstHalfIdx,
                                                Container& mainIdx,
                                                Container& remIdx) {
@@ -75,7 +49,7 @@ void PmergeMe<Container>::buildMainAndRemIndex(const Container& sortIdx,
     mainIdx[i] = sortIdx[firstHalfIdx[i]];
   }
   remIdx.clear();
-  remIdx.reserve(half + (N % 2 ? 1 : 0));
+  // remIdx.reserve(half + (N % 2 ? 1 : 0));
   for (int i = 0; i < half; ++i) {
     const int idx = mainIdx[i];
     const int paired = (idx >= half) ? (idx - half) : (idx + half);
@@ -88,7 +62,7 @@ void PmergeMe<Container>::buildMainAndRemIndex(const Container& sortIdx,
 // ========= materializeChains =========
 // index 配列に従って、元配列 first から値列を構築する
 template <typename Container>
-void PmergeMe<Container>::materializeChains(const iterator first,
+void PmergeMe<Container>::materializeChains(const_iterator first,
                                             const Container& mainIdx,
                                             const Container& remIdx,
                                             Container& mainVals,
@@ -107,6 +81,23 @@ void PmergeMe<Container>::materializeChains(const iterator first,
   }
 }
 
+template <typename Container>
+int PmergeMe<Container>::binaryInsertion(const Container& mainVals,
+                                       const typename Container::value_type& val,
+                                       int rightInclusive) {
+    int left = 0;
+    int right = rightInclusive;
+    
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (mainVals[mid] <= val) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    return left;
+}
 
 // ========= jacobsthalInsert =========
 // remVals を Jacobsthal 順に mainVals へ二分挿入していき、対応するインデックス列 mainIdx も更新する
@@ -166,7 +157,7 @@ void PmergeMe<Container>::jacobsthalInsert(Container& mainVals, Container& mainI
 
 // ========= mergeInsertionSort 本体 =========
 template <typename Container>
-Container PmergeMe<Container>::mergeInsertionSort(iterator first, iterator last) {
+Container PmergeMe<Container>::mergeInsertionSort(const_iterator first, const_iterator last) {
   const int N = static_cast<int>(std::distance(first, last));
   Container elems(first, last);
 
@@ -192,7 +183,7 @@ Container PmergeMe<Container>::mergeInsertionSort(iterator first, iterator last)
   // main/rem のインデックス列を作る
   Container mainIdx, remIdx;
   mainIdx.assign(N, -1);
-  buildMainAndRemIndex(sortIdx, firstHalfIdx, mainIdx, remIdx);
+  buildMainChainAndRemIndex(sortIdx, firstHalfIdx, mainIdx, remIdx);
 
   // 実体の値列を作る
   Container mainVals, remVals;

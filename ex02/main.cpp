@@ -1,4 +1,11 @@
 #include "PmergeMe.hpp"
+
+#include <iostream>     // for std::cerr
+#include <vector>       // for std::vector
+#include <deque>        // for std::deque
+#include <sstream>      // for std::stringstream
+#include <iomanip>  // for std::setw
+#include <ctime>    // for clock_t, clock(), CLOCKS_PER_SEC
 #ifdef DEBUG
 int num_comparisons = 0;
 #endif
@@ -32,10 +39,11 @@ void printContainer(const Container& container) {
   std::cout << std::endl;
 }
 
-double benchSortAndPrint(const Container& input, const std::string& label, int countShown) {
+template <typename Container>
+double benchSortAndPrint(Container& input, const std::string& label, int countShown) {
   PmergeMe<Container> sorter;
   clock_t start = clock();
-  std::vector<int> indices = sorter.mergeInsertionSort(input.begin(), input.end());
+  Container indices = sorter.mergeInsertionSort(input.begin(), input.end());
   clock_t end = clock();
 
   #ifdef DEBUG
