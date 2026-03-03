@@ -122,3 +122,17 @@ int main(int argc, char** argv) {
 // メモリの再確保が少ない（内部的に分割して格納されるため、リサイズの影響が小さい）
 // 大規模データでも安定して動作（vector のように一括メモリ確保の影響を受けにくい）
 // つまり、ソート数が少なければ std::vector 、多ければ std::deque の方が処理時間が短くなる
+
+// # 21要素
+// ./PmergeMe $(jot -r 21 1 100000 | tr '\n' ' ')
+
+// # 3000要素
+// ./PmergeMe $(jot -r 3000 1 100000 | tr '\n' ' ')
+
+// | 今の名前      | おすすめ            |
+// | --------- | --------------- |
+// | sortIdx   | originalIndices |
+// | mainIdx   | sortedIndices   |
+// | remIdx    | pendingIndices  |
+// | mainChain | mainValues      |
+// | remChain  | pendingValues   |
